@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'services/database_helper.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'dart:convert';
 import 'entry_screen.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   databaseFactory = databaseFactoryFfi;
@@ -28,10 +28,7 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  late int year;
-  late int month;
-  late int firstWeekday;
-  late int daysInMonth;
+  DateTime currentMonth = DateTime.now(); //asking the device the year and month
   Map<int, int> entriesPerDay = {};
   bool isReviewMode = false;
   List<int> reviewedDays = [];
@@ -39,10 +36,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
-    year = DateTime.now().year;
-    month = DateTime.now().month;
-    firstWeekday = DateTime(year, month, 1).weekday;
-    daysInMonth = DateTime(year, month + 1, 0).day;
     loadEntries();
     loadReviewedDays();
   }
@@ -59,6 +52,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void loadEntries() async {
     final dbHelper = DatabaseHelper();
+    DateTime(currentMonth.year, currentMonth.month + 1, 0)
+        .day; //using this to evaluate the last day of the month, including special circumstances
     for (int day = 1; day <= 30; day++) {
       int count = await dbHelper.getEntryCountForDay(day);
       setState(() {
@@ -80,6 +75,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
     if (didAddEntry == true) {
       setState(() {
+        print("returned from EntryScreen with $didAddEntry");
         entriesPerDay[day] = (entriesPerDay[day] ?? 0) + 1;
       });
     }
@@ -91,11 +87,44 @@ class _CalendarScreenState extends State<CalendarScreen> {
       appBar: AppBar(title: Text('Daily Journal')),
       body: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_left),
+                onPressed: () {
+                  setState(() {
+                    currentMonth =
+                        DateTime(currentMonth.year, currentMonth.month - 1);
+                    entriesPerDay.clear();
+                    loadEntries();
+                  });
+                },
+              ),
+              Text(
+                DateFormat.yMMMM().format(currentMonth),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                icon: Icon(Icons.arrow_right),
+                onPressed: () {
+                  setState(() {
+                    currentMonth =
+                        DateTime(currentMonth.year, currentMonth.month + 1);
+                    entriesPerDay.clear();
+                    loadEntries();
+                  });
+                },
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
           CalendarWidget(
-            year: year,
-            month: month,
-            firstWeekday: firstWeekday,
-            daysInMonth: daysInMonth,
+            currentMonth: currentMonth,
+            firstWeekday:
+                DateTime(currentMonth.year, currentMonth.month, 1).weekday,
+            daysInMonth:
+                DateTime(currentMonth.year, currentMonth.month + 1, 0).day,
             entriesPerDay: entriesPerDay,
             reviewedDays: reviewedDays,
             isReviewMode: isReviewMode,
@@ -125,8 +154,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 }
 
 class CalendarWidget extends StatelessWidget {
-  final int year;
-  final int month;
+  final DateTime currentMonth;
   final int firstWeekday; // 1=Mon … 7=Sun
   final int daysInMonth;
   final Map<int, int> entriesPerDay;
@@ -135,16 +163,15 @@ class CalendarWidget extends StatelessWidget {
   final ValueChanged<int> onDayTapped;
 
   const CalendarWidget({
-    Key? key,
-    required this.year,
-    required this.month,
+    super.key,
+    required this.currentMonth,
     required this.firstWeekday,
     required this.daysInMonth,
     required this.entriesPerDay,
     required this.reviewedDays,
     required this.isReviewMode,
     required this.onDayTapped,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

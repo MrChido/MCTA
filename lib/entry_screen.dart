@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:melzers_symptom_tracker/main.dart';
 import 'services/database_helper.dart';
 import 'dart:convert';
 
@@ -120,58 +121,65 @@ class _EntryScreenState extends State<EntryScreen> {
             ),
 
             //Save Entry Button
-            ElevatedButton(
-              onPressed: () async {
-                String bloodSugarInput =
-                    _bsugarsController.text.trim(); //get user input
-                //int bloodSugarValue = int.tryParse(bloodSugarInput) ?? 0;
+            Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () async {
+                  String bloodSugarInput =
+                      _bsugarsController.text.trim(); //get user input
+                  //int bloodSugarValue = int.tryParse(bloodSugarInput) ?? 0;
 
-                List<String> mnm = _mnmController.text
-                    .trim()
-                    .split(",")
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList();
-                List<String> activities = _activitiesController.text
-                    .trim()
-                    .split(",")
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList();
-                List<String> symptoms = _symptomsController.text
-                    .trim()
-                    .split(",")
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList();
+                  List<String> mnm = _mnmController.text
+                      .trim()
+                      .split(",")
+                      .map((e) => e.trim())
+                      .where((e) => e.isNotEmpty)
+                      .toList();
+                  List<String> activities = _activitiesController.text
+                      .trim()
+                      .split(",")
+                      .map((e) => e.trim())
+                      .where((e) => e.isNotEmpty)
+                      .toList();
+                  List<String> symptoms = _symptomsController.text
+                      .trim()
+                      .split(",")
+                      .map((e) => e.trim())
+                      .where((e) => e.isNotEmpty)
+                      .toList();
 
-                String mnmInput = jsonEncode(mnm);
-                String activitiesInput = jsonEncode(activities);
-                String symptomsInput = jsonEncode(symptoms);
-                String wakeTimeMilitary =
-                    convertToMilitaryTime(_wakeTimeController.text);
-                String sleepTimeMilitary =
-                    convertToMilitaryTime(_sleepTimeController.text);
+                  String mnmInput = jsonEncode(mnm);
+                  String activitiesInput = jsonEncode(activities);
+                  String symptomsInput = jsonEncode(symptoms);
+                  String wakeTimeMilitary =
+                      convertToMilitaryTime(_wakeTimeController.text);
+                  String sleepTimeMilitary =
+                      convertToMilitaryTime(_sleepTimeController.text);
 
-                await DatabaseHelper().insertEntry(
-                    widget.day,
-                    severity.round(),
-                    fatigue,
-                    pain,
-                    bloodSugarInput,
-                    mnmInput,
-                    activitiesInput,
-                    symptomsInput,
-                    int.parse(wakeTimeMilitary),
-                    int.parse(sleepTimeMilitary));
-                print("mnm before inserting: $mnmInput");
-                print("activities before inserting: $activitiesInput");
+                  await DatabaseHelper().insertEntry(
+                      widget.day,
+                      severity.round(),
+                      fatigue,
+                      pain,
+                      bloodSugarInput,
+                      mnmInput,
+                      activitiesInput,
+                      symptomsInput,
+                      int.parse(wakeTimeMilitary),
+                      int.parse(sleepTimeMilitary));
+                  print("mnm before inserting: $mnmInput");
+                  print("activities before inserting: $activitiesInput");
 
-                widget.updateEntryCount(widget
-                    .day); // Calls the function passed from CalendarScreen
-                Navigator.pop(context);
-              },
-              child: Text('Save Entry'),
+                  widget.updateEntryCount(widget
+                      .day); // Calls the function passed from CalendarScreen
+                  print("About to pop back to main");
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => CalendarScreen()),
+                    (route) => false,
+                  );
+                },
+                child: Text('Save Entry'),
+              ),
             ),
           ],
         ),
