@@ -25,4 +25,4 @@ May 2025:
 App creation started
 
 June 2025:
-New build documented on github, .gitignore and cleanups performed, dates look more like a calendar form, still tending to the app/database connection.
+New build documented on github, .gitignore and cleanups performed, dates look more like a calendar form, still tending to the app/database connection, adjusting the calendar date positions to relate to the shown month.
