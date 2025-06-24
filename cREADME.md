@@ -26,3 +26,4 @@ App creation started
 
 June 2025:
 New build documented on github, .gitignore and cleanups performed, dates look more like a calendar form, still tending to the app/database connection, adjusting the calendar date positions to relate to the shown month.
+Shifted the database query point to the 'timestamp' collumn and away from 'day' column. a quirk in the Review entries button was discovered.
