@@ -42,8 +42,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void loadReviewedDays() async {
     final dbHelper = DatabaseHelper();
-    List<int> entryDays =
-        await dbHelper.getDaysWithEntries(); // new helper function
+    final int selectedYear = currentMonth.year;
+    final int selectedMonth = currentMonth.month;
+    List<int> entryDays = await dbHelper.getDaysWithEntries(
+        selectedYear, selectedMonth); // new helper function
 
     setState(() {
       reviewedDays = entryDays;
@@ -52,15 +54,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void loadEntries() async {
     final dbHelper = DatabaseHelper();
-    DateTime(currentMonth.year, currentMonth.month + 1, 0)
-        .day; //using this to evaluate the last day of the month, including special circumstances
-    for (int day = 1; day <= 30; day++) {
-      int count = await dbHelper.getEntryCountForDay(day);
-      setState(() {
-        entriesPerDay[day] = count;
-      });
-      print("day $day has $count entries"); //debuging
+    final db = await dbHelper.database;
+
+    final String yearStr = currentMonth.year.toString();
+    final String monthStr = currentMonth.month.toString().padLeft(2, '0');
+
+    final result = await db.rawQuery(
+      '''SELECT timestamp FROM entries WHERE strftime('%Y', timestamp) = ? AND strftime('%m', timestamp) = ?''',
+      [yearStr, monthStr],
+    );
+
+    final Map<int, int> tempMap = {};
+    for (final row in result) {
+      final ts = DateTime.parse(
+          row['timestamp'] as String); //defining the 'timestamp' as a string
+      final day = ts.day;
+      tempMap[day] = (tempMap[day] ?? 0) + 1;
     }
+    setState(() {
+      entriesPerDay = tempMap;
+    });
   }
 
   Future<void> _onDayTapped(int day) async {
@@ -91,16 +104,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                icon: Icon(Icons.arrow_left),
-                onPressed: () {
-                  setState(() {
-                    currentMonth =
-                        DateTime(currentMonth.year, currentMonth.month - 1);
-                    entriesPerDay.clear();
+                  icon: Icon(Icons.arrow_left),
+                  onPressed: () async {
+                    setState(() {
+                      currentMonth =
+                          DateTime(currentMonth.year, currentMonth.month - 1);
+                      entriesPerDay.clear();
+                    });
                     loadEntries();
-                  });
-                },
-              ),
+
+                    if (isReviewMode) {
+                      loadReviewedDays();
+                    }
+                  }),
               Text(
                 DateFormat.yMMMM().format(currentMonth),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

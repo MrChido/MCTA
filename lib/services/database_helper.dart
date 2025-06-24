@@ -12,13 +12,18 @@ class DatabaseHelper {
     return _database!;
   }
 
-  Future<List<int>> getDaysWithEntries() async {
+  Future<List<int>> getDaysWithEntries(int year, month) async {
     final db = await database;
-    List<Map<String, dynamic>> result =
-        await db.rawQuery("SELECT DISTINCT day From entries WHERE day > 0");
+    //formating month to two digits for SQLite compatability
+    final String paddedMonth = month.toString().padLeft(2, '0');
+
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+        '''SELECT DISTINCT CAST(strftime('%d', timestamp) AS INTEGER) as day FROM entries WHERE strftime('%Y', timestamp) = ? AND strftime('%m', timestamp)=?''',
+        [year.toString(), paddedMonth]);
 
     return result.map((row) => row['day'] as int).toList();
   }
+  //this querries month and year as well as day now making reports more refined
 
   Future<Database> _initDatabase() async {
     final directory = await getApplicationDocumentsDirectory();
