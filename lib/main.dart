@@ -3,6 +3,7 @@ import 'services/database_helper.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'entry_screen.dart';
 import 'package:intl/intl.dart';
+import 'Utilities/date_util.dart';
 
 void main() {
   databaseFactory = databaseFactoryFfi;
@@ -38,6 +39,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
     super.initState();
     loadEntries();
     loadReviewedDays();
+    _syncToCurrentMonthIfNeeded();
+  }
+
+  //setting up automatic advance of the calendar.
+  void _syncToCurrentMonthIfNeeded() {
+    final now = DateUtilHelper.getCurrentMonth();
+    if (!DateUtilHelper.isSameMonth(currentMonth, now)) {
+      setState(() {
+        currentMonth = DateTime(now.year, now.month);
+        entriesPerDay.clear();
+        loadEntries();
+        if (isReviewMode) loadReviewedDays();
+      });
+    }
   }
 
   void loadReviewedDays() async {
@@ -52,7 +67,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
-  void loadEntries() async {
+  Future<void> loadEntries() async {
     final dbHelper = DatabaseHelper();
     final db = await dbHelper.database;
 
@@ -110,8 +125,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       currentMonth =
                           DateTime(currentMonth.year, currentMonth.month - 1);
                       entriesPerDay.clear();
+                      reviewedDays.clear();
+                      isReviewMode = false;
                     });
-                    loadEntries();
+                    await loadEntries();
 
                     if (isReviewMode) {
                       loadReviewedDays();
@@ -123,11 +140,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
               IconButton(
                 icon: Icon(Icons.arrow_right),
-                onPressed: () {
+                onPressed: () async {
                   setState(() {
                     currentMonth =
                         DateTime(currentMonth.year, currentMonth.month + 1);
                     entriesPerDay.clear();
+                    reviewedDays.clear();
+                    isReviewMode = false;
                     loadEntries();
                   });
                 },
