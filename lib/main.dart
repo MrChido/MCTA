@@ -133,6 +133,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       loadReviewedDays();
                     }
                   }),
+              //changed the Month and Year declaration to a clickable, this way the user can jump between months and years
+              //at a greater distance than one month at a time.
               GestureDetector(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -284,6 +286,7 @@ class CalendarWidget extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Center(
+                        //This is the controll for the day being at its most extreme point
                         child: entryCount >= 10
                             ? Icon(Icons.whatshot,
                                 color: Colors.yellow, size: 30)
