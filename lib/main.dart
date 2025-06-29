@@ -67,7 +67,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
-  Future<void> loadEntries() async {
+  void loadEntries() async {
     final dbHelper = DatabaseHelper();
     final db = await dbHelper.database;
 
@@ -103,7 +103,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
     if (didAddEntry == true) {
       setState(() {
-        print("returned from EntryScreen with $didAddEntry");
         entriesPerDay[day] = (entriesPerDay[day] ?? 0) + 1;
       });
     }
@@ -128,15 +127,40 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       reviewedDays.clear();
                       isReviewMode = false;
                     });
-                    await loadEntries();
+                    loadEntries();
 
                     if (isReviewMode) {
                       loadReviewedDays();
                     }
                   }),
-              Text(
-                DateFormat.yMMMM().format(currentMonth),
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: currentMonth,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now().add(Duration(days: 365 * 5)),
+                    initialDatePickerMode: DatePickerMode.year,
+                  );
+
+                  if (picked != null) {
+                    setState(() {
+                      currentMonth = DateTime(picked.year, picked.month);
+                      entriesPerDay.clear();
+                      reviewedDays.clear();
+                      isReviewMode = false;
+                    });
+                    loadEntries();
+                  }
+                },
+                child: Text(
+                  DateFormat.yMMMM().format(currentMonth),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
               IconButton(
                 icon: Icon(Icons.arrow_right),
@@ -262,7 +286,7 @@ class CalendarWidget extends StatelessWidget {
                       child: Center(
                         child: entryCount >= 10
                             ? Icon(Icons.whatshot,
-                                color: Colors.white, size: 16)
+                                color: Colors.yellow, size: 30)
                             : Text(
                                 '$day',
                                 style:
@@ -288,9 +312,20 @@ class CalendarWidget extends StatelessWidget {
       return Color(0xFF4B0082); //indigo color
     }
     if (entryCount == 0) return Colors.grey;
-    if (entryCount >= 1 && entryCount <= 5) return Colors.green;
-    if (entryCount >= 6 && entryCount <= 9) return Colors.yellow;
-    if (entryCount >= 10) return Colors.red;
-    return Colors.red.shade900;
+    //this bit of code, is the gradient from grey to green to yellow to red
+    //it will adapt to the number of entries and transition
+    const int maxCount =
+        10; //the gradient change caps at 10 entries for the transition.
+    final normalized = (entryCount / maxCount).clamp(0.0, 1.0);
+    if (entryCount <= 5) {
+      return Color.lerp(
+          Colors.grey, Colors.green, normalized / (5 / maxCount))!;
+    } else if (entryCount <= 9) {
+      return Color.lerp(Colors.green, Colors.yellow,
+          (normalized - (5 / maxCount)) / ((9 - 5) / maxCount))!;
+    } else {
+      return Color.lerp(Colors.yellow, Colors.red,
+          (normalized - (9 / maxCount)) / ((maxCount - 9) / maxCount))!;
+    }
   }
 }
