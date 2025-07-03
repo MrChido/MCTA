@@ -4,6 +4,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'entry_screen.dart';
 import 'package:intl/intl.dart';
 import 'Utilities/date_util.dart';
+//import 'Utilities/color_util.dart';
+//import 'Utilities/entry_loader.dart';
+import 'Widgs/calendar_widg.dart';
 
 void main() {
   databaseFactory = databaseFactoryFfi;
@@ -59,9 +62,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final dbHelper = DatabaseHelper();
     final int selectedYear = currentMonth.year;
     final int selectedMonth = currentMonth.month;
-    List<int> entryDays = await dbHelper.getDaysWithEntries(
-        selectedYear, selectedMonth); // new helper function
 
+    final entryDays =
+        await dbHelper.getDaysWithEntries(selectedYear, selectedMonth);
     setState(() {
       reviewedDays = entryDays;
     });
@@ -214,121 +217,98 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 }
 
-class CalendarWidget extends StatelessWidget {
-  final DateTime currentMonth;
-  final int firstWeekday; // 1=Mon … 7=Sun
-  final int daysInMonth;
-  final Map<int, int> entriesPerDay;
-  final List<int> reviewedDays;
-  final bool isReviewMode;
-  final ValueChanged<int> onDayTapped;
+// class CalendarWidget extends StatelessWidget {
+//   final DateTime currentMonth;
+//   final int firstWeekday; // 1=Mon … 7=Sun
+//   final int daysInMonth;
+//   final Map<int, int> entriesPerDay;
+//   final List<int> reviewedDays;
+//   final bool isReviewMode;
+//   final ValueChanged<int> onDayTapped;
 
-  const CalendarWidget({
-    super.key,
-    required this.currentMonth,
-    required this.firstWeekday,
-    required this.daysInMonth,
-    required this.entriesPerDay,
-    required this.reviewedDays,
-    required this.isReviewMode,
-    required this.onDayTapped,
-  });
+//   const CalendarWidget({
+//     super.key,
+//     required this.currentMonth,
+//     required this.firstWeekday,
+//     required this.daysInMonth,
+//     required this.entriesPerDay,
+//     required this.reviewedDays,
+//     required this.isReviewMode,
+//     required this.onDayTapped,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    // How many table rows we need
-    final rowCount = ((daysInMonth + (firstWeekday - 1)) / 7).ceil();
-    //sunday first labels:
-    final labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    final offset = firstWeekday % 7;
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          // Weekday headers
-          Row(
-            children: labels
-                .map((d) => Expanded(
-                    child: Center(
-                        child: Text(d,
-                            style: TextStyle(fontWeight: FontWeight.bold)))))
-                .toList(),
-          ),
-          SizedBox(height: 8),
-          // Calendar grid
-          Table(
-            children: List.generate(rowCount, (weekIdx) {
-              return TableRow(
-                children: List.generate(7, (wdayIdx) {
-                  // slotIndex 0 maps to Mon slot if firstWeekday==1
-                  final slot = weekIdx * 7 + wdayIdx;
-                  final day = slot - offset + 1;
+//   @override
+//   Widget build(BuildContext context) {
+//     // How many table rows we need
+//     final rowCount = ((daysInMonth + (firstWeekday - 1)) / 7).ceil();
+//     //sunday first labels:
+//     final labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+//     final offset = firstWeekday % 7;
+//     return Padding(
+//       padding: const EdgeInsets.all(8.0),
+//       child: Column(
+//         children: [
+//           // Weekday headers
+//           Row(
+//             children: labels
+//                 .map((d) => Expanded(
+//                     child: Center(
+//                         child: Text(d,
+//                             style: TextStyle(fontWeight: FontWeight.bold)))))
+//                 .toList(),
+//           ),
+//           SizedBox(height: 8),
+//           // Calendar grid
+//           Table(
+//             children: List.generate(rowCount, (weekIdx) {
+//               return TableRow(
+//                 children: List.generate(7, (wdayIdx) {
+//                   // slotIndex 0 maps to Mon slot if firstWeekday==1
+//                   final slot = weekIdx * 7 + wdayIdx;
+//                   final day = slot - offset + 1;
 
-                  // blank cell if outside 1…daysInMonth
-                  if (day < 1 || day > daysInMonth) {
-                    return SizedBox(height: 40);
-                  }
+//                   // blank cell if outside 1…daysInMonth
+//                   if (day < 1 || day > daysInMonth) {
+//                     return SizedBox(height: 40);
+//                   }
 
-                  // determine background & text colors
-                  final entryCount = entriesPerDay[day] ?? 0;
-                  final bgColor = _getColor(entryCount, day);
-                  final textColor = (isReviewMode && reviewedDays.contains(day))
-                      ? Colors.white
-                      : Colors.black;
+//                   // determine background & text colors
+//                   final entryCount = entriesPerDay[day] ?? 0;
+//                   final bgColor =
+//                       getColor(entryCount, day, isReviewMode, reviewedDays);
+//                   final textColor = (isReviewMode && reviewedDays.contains(day))
+//                       ? Colors.white
+//                       : Colors.black;
 
-                  return GestureDetector(
-                    onTap: () => onDayTapped(day),
-                    child: Container(
-                      height: 40,
-                      margin: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: bgColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        //This is the controll for the day being at its most extreme point
-                        child: entryCount >= 10
-                            ? Icon(Icons.whatshot,
-                                color: Colors.yellow, size: 30)
-                            : Text(
-                                '$day',
-                                style:
-                                    TextStyle(color: textColor, fontSize: 14),
-                              ),
-                      ),
-                    ),
-                  );
-                }),
-              );
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getColor(
-    int entryCount,
-    int day,
-  ) {
-    if (isReviewMode && reviewedDays.contains(day)) {
-      return Color(0xFF4B0082); //indigo color
-    }
-    if (entryCount == 0) return Colors.grey;
-    //this bit of code, is the gradient from grey to green to yellow to red
-    //it will adapt to the number of entries and transition
-    const int maxCount =
-        10; //the gradient change caps at 10 entries for the transition.
-    final normalized = (entryCount / maxCount).clamp(0.0, 1.0);
-    if (entryCount <= 5) {
-      return Color.lerp(
-          Colors.grey, Colors.green, normalized / (5 / maxCount))!;
-    } else if (entryCount <= 9) {
-      return Color.lerp(Colors.green, Colors.yellow,
-          (normalized - (5 / maxCount)) / ((9 - 5) / maxCount))!;
-    } else {
-      return Color.lerp(Colors.yellow, Colors.red,
-          (normalized - (9 / maxCount)) / ((maxCount - 9) / maxCount))!;
-    }
-  }
-}
+//                   return GestureDetector(
+//                     onTap: () => onDayTapped(day),
+//                     child: Container(
+//                       height: 40,
+//                       margin: EdgeInsets.all(2),
+//                       decoration: BoxDecoration(
+//                         color: bgColor,
+//                         shape: BoxShape.circle,
+//                       ),
+//                       child: Center(
+//                         //This is the controll for the day being at its most extreme point
+//                         child: entryCount >= 10
+//                             ? Icon(Icons.whatshot,
+//                                 color: Colors.yellow,
+//                                 size: getFlameSize(entryCount))
+//                             : Text(
+//                                 '$day',
+//                                 style:
+//                                     TextStyle(color: textColor, fontSize: 14),
+//                               ),
+//                       ),
+//                     ),
+//                   );
+//                 }),
+//               );
+//             }),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+//}

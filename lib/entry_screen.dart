@@ -50,7 +50,7 @@ class _EntryScreenState extends State<EntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Entry for Day ${widget.day}')),
+      appBar: AppBar(title: Text('Please fill the fields')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
@@ -103,27 +103,26 @@ class _EntryScreenState extends State<EntryScreen> {
             Text('Meals/Medications:'),
             TextField(
               controller: _mnmController, //tracks the input
-              decoration: InputDecoration(
-                  hintText: "Enter Meals and Medications taken"),
+              decoration: InputDecoration(hintText: "separate by commas"),
             ),
 
             Text('Activities:'),
             TextField(
               controller: _activitiesController, //tracks the input
-              decoration: InputDecoration(hintText: "Enter your activities"),
+              decoration: InputDecoration(hintText: "separate by commas"),
             ),
 
             Text('Symptoms:'),
             TextField(
               controller: _symptomsController, //tracks symptom input
-              decoration:
-                  InputDecoration(hintText: 'Enter your current sympoms'),
+              decoration: InputDecoration(hintText: 'separate by commas'),
             ),
 
             //Save Entry Button
             Builder(
               builder: (context) => ElevatedButton(
                 onPressed: () async {
+                  print("Save button tapped.");
                   String bloodSugarInput =
                       _bsugarsController.text.trim(); //get user input
                   //int bloodSugarValue = int.tryParse(bloodSugarInput) ?? 0;
