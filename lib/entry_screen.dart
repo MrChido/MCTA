@@ -12,10 +12,89 @@ class EntryScreen extends StatefulWidget {
   _EntryScreenState createState() => _EntryScreenState();
 }
 
+class _BoltThumb extends SliderComponentShape {
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size(30, 30);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+    const iconSize = 24.0;
+
+    final iconPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(Icons.bolt.codePoint),
+        style: TextStyle(
+          fontSize: iconSize,
+          fontFamily: Icons.bolt.fontFamily,
+          package: Icons.bolt.fontPackage,
+          color: sliderTheme.thumbColor ?? Colors.deepOrangeAccent,
+        ),
+      ),
+      textDirection: textDirection,
+    );
+
+    iconPainter.layout();
+    iconPainter.paint(canvas, center - Offset(iconSize / 2, iconSize / 2));
+  }
+}
+
+class _WaterDropThumb extends SliderComponentShape {
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size(30, 30);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+    const iconSize = 24.0;
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(Icons.water_drop.codePoint),
+        style: TextStyle(
+          fontSize: iconSize,
+          fontFamily: Icons.water_drop.fontFamily,
+          package: Icons.water_drop.fontPackage,
+          color: sliderTheme.thumbColor ?? Colors.blueAccent,
+        ),
+      ),
+      textDirection: textDirection,
+    );
+
+    textPainter.layout();
+    textPainter.paint(canvas, center - Offset(iconSize / 2, iconSize / 2));
+  }
+}
+
 class _EntryScreenState extends State<EntryScreen> {
   bool fatigue = false;
-  bool pain = false;
-  double severity = 4.0;
+  int severity = 4;
   final TextEditingController _bsugarsController = TextEditingController();
   List<String> mnm = [];
   List<String> activities = [];
@@ -24,6 +103,7 @@ class _EntryScreenState extends State<EntryScreen> {
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _wakeTimeController = TextEditingController();
   final TextEditingController _sleepTimeController = TextEditingController();
+  int water = 4;
 
   String convertToMilitaryTime(String timeInput) {
     timeInput = timeInput.trim().toLowerCase(); //normalize the case usage
@@ -65,27 +145,25 @@ class _EntryScreenState extends State<EntryScreen> {
                 });
               },
             ),
-            // SwitchListTile(
-            //   title: Text('Pain'),
-            //   value: pain,
-            //   onChanged: (bool newValue) {
-            //     setState(() {
-            //       pain = newValue;
-            //     });
-            //   },
-            // ),
+
             Text('Pain Severity:'),
-            Slider(
-              value: severity,
-              min: 0,
-              max: 10,
-              divisions: 10,
-              label: severity.round().toString(), //shows current value
-              onChanged: (double newValue) {
-                setState(() {
-                  severity = newValue;
-                });
-              },
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                thumbShape: _BoltThumb(),
+                thumbColor: Colors.deepOrangeAccent,
+              ),
+              child: Slider(
+                value: severity.toDouble(),
+                min: 0,
+                max: 10,
+                divisions: 10,
+                label: severity.round().toString(), //shows current value
+                onChanged: (double newValue) {
+                  setState(() {
+                    severity = newValue.toInt();
+                  });
+                },
+              ),
             ),
             Text('Wake Time:'),
             TextField(
@@ -104,6 +182,28 @@ class _EntryScreenState extends State<EntryScreen> {
             TextField(
               controller: _mnmController, //tracks the input
               decoration: InputDecoration(hintText: "separate by commas"),
+            ),
+            Text('water consumed:'),
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                thumbShape: _WaterDropThumb(),
+                thumbColor: Colors.blueAccent,
+              ),
+              child: Slider(
+                value: water.toDouble(),
+                min: 0,
+                max: 110,
+                divisions: 11, //0 to median 110 oz in steps of 10
+                label: "$water oz",
+                activeColor: Colors.blueAccent,
+                onChanged: (double newWat) {
+                  setState(() {
+                    water = ((newWat / 10).round() * 10).clamp(0,
+                        110); // This is how sliders work you have your input "newWat" and 10 points on the line.
+                    //.round() *10 makes the divisions clean, .clamp() defines the 2 endpoints of the slider.
+                  });
+                },
+              ),
             ),
 
             Text('Activities:'),
@@ -155,16 +255,17 @@ class _EntryScreenState extends State<EntryScreen> {
                       convertToMilitaryTime(_sleepTimeController.text);
 
                   await DatabaseHelper().insertEntry(
-                      widget.day,
-                      severity.round(),
-                      fatigue,
-                      pain,
-                      bloodSugarInput,
-                      mnmInput,
-                      activitiesInput,
-                      symptomsInput,
-                      int.parse(wakeTimeMilitary),
-                      int.parse(sleepTimeMilitary));
+                    widget.day,
+                    severity.round(),
+                    fatigue,
+                    bloodSugarInput,
+                    mnmInput,
+                    activitiesInput,
+                    symptomsInput,
+                    int.parse(wakeTimeMilitary),
+                    int.parse(sleepTimeMilitary),
+                    water.round(),
+                  );
                   print("mnm before inserting: $mnmInput");
                   print("activities before inserting: $activitiesInput");
 

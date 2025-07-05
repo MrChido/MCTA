@@ -39,14 +39,14 @@ class DatabaseHelper {
             day INTEGER,
             severity INTEGER,
             fatigue INTEGER,
-            pain INTEGER,
             timestamp TEXT,
             BSugars TEXT,
             mnm TEXT,
             activities TEXT,
             symptoms TEXT,
             wake INTEGER,
-            sleep INTEGER 
+            sleep INTEGER,
+            water INTEGER 
           )
         ''');
       },
@@ -63,13 +63,13 @@ class DatabaseHelper {
     int day,
     int severity,
     bool fatigue,
-    bool pain,
     String sugars,
     String mnm,
     String activities,
     String symptoms,
     int wake,
     int sleep,
+    int water,
   ) async {
     final db = await database;
     String mnmInput = mnm.isNotEmpty ? jsonEncode(mnm) : '[]';
@@ -77,7 +77,7 @@ class DatabaseHelper {
         activities.isNotEmpty ? jsonEncode(activities) : '[]';
     String symptomsInput = symptoms.isNotEmpty ? jsonEncode(symptoms) : '[]';
     print(
-        "$day, $severity, $sugars,$mnmInput, $activitiesInput, $symptomsInput");
+        "$day, $severity, $sugars,$mnmInput, $activitiesInput, $symptomsInput, $water");
 
     await db.insert(
       'entries',
@@ -85,7 +85,6 @@ class DatabaseHelper {
         'day': day,
         'severity': severity,
         'fatigue': fatigue ? 1 : 0,
-        'pain': pain ? 1 : 0,
         'wake': wake,
         'sleep': sleep,
         'timestamp': DateTime.now().toIso8601String(),
@@ -93,6 +92,7 @@ class DatabaseHelper {
         'mnm': mnmInput,
         'activities': activitiesInput,
         'symptoms': symptomsInput,
+        'water': water,
       },
     );
     print("Inserted entry: ${await db.query('entries')}"); //verify sugars
