@@ -209,7 +209,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 }
               });
             },
-            child: Text("Review Entries"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  isReviewMode ? Color(0xFF4B0082) : Colors.grey[300],
+              foregroundColor: isReviewMode ? Colors.white : Colors.black,
+              elevation: isReviewMode ? 6 : 2,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadiusGeometry.circular(10),
+              ),
+            ),
+            child: Text(isReviewMode ? "Exit Review Mode" : "Review Entries"),
           ),
         ],
       ),

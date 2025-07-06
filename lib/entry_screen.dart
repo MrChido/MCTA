@@ -103,7 +103,8 @@ class _EntryScreenState extends State<EntryScreen> {
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _wakeTimeController = TextEditingController();
   final TextEditingController _sleepTimeController = TextEditingController();
-  int water = 4;
+  int water = 0;
+  final TextEditingController _hHealthController = TextEditingController();
 
   String convertToMilitaryTime(String timeInput) {
     timeInput = timeInput.trim().toLowerCase(); //normalize the case usage
@@ -168,22 +169,41 @@ class _EntryScreenState extends State<EntryScreen> {
             Text('Wake Time:'),
             TextField(
                 controller: _wakeTimeController,
-                decoration: InputDecoration(hintText: '7:00AM')),
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                    hintText: '7.00AM',
+                    hintStyle: TextStyle(color: Colors.grey))),
             Text('Bed Time'),
             TextField(
                 controller: _sleepTimeController,
-                decoration: InputDecoration(hintText: '10.00PM')),
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                    hintText: '10.00PM',
+                    hintStyle: TextStyle(color: Colors.grey))),
             Text('Blood Sugar:'),
             TextField(
-              controller: _bsugarsController, //tracks the input
-              decoration: InputDecoration(hintText: "Enter single readings"),
+                controller: _bsugarsController,
+                style: TextStyle(color: Colors.black), //tracks the input
+                decoration: InputDecoration(
+                    hintText: "Enter single readings",
+                    hintStyle: TextStyle(color: Colors.grey))),
+            Text('Heart Health (Systolic/Diastolic/Heart Rate/O²):'),
+            TextField(
+              controller: _hHealthController,
+              style: TextStyle(color: Colors.black), //tracks the input
+              decoration: InputDecoration(
+                  hintText: "Systolic/Diastolic/Heart Rate/O²",
+                  hintStyle: TextStyle(color: Colors.grey)),
             ),
             Text('Meals/Medications:'),
             TextField(
-              controller: _mnmController, //tracks the input
-              decoration: InputDecoration(hintText: "separate by commas"),
+              controller: _mnmController,
+              style: TextStyle(color: Colors.black), //tracks the input
+              decoration: InputDecoration(
+                  hintText: "separate by commas",
+                  hintStyle: TextStyle(color: Colors.grey)),
             ),
-            Text('water consumed:'),
+            Text('water consumed (oz):'),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 thumbShape: _WaterDropThumb(),
@@ -208,14 +228,20 @@ class _EntryScreenState extends State<EntryScreen> {
 
             Text('Activities:'),
             TextField(
-              controller: _activitiesController, //tracks the input
-              decoration: InputDecoration(hintText: "separate by commas"),
+              controller: _activitiesController,
+              style: TextStyle(color: Colors.black), //tracks the input
+              decoration: InputDecoration(
+                  hintText: "separate by commas",
+                  hintStyle: TextStyle(color: Colors.grey)),
             ),
 
             Text('Symptoms:'),
             TextField(
-              controller: _symptomsController, //tracks symptom input
-              decoration: InputDecoration(hintText: 'separate by commas'),
+              controller: _symptomsController,
+              style: TextStyle(color: Colors.black), //tracks symptom input
+              decoration: InputDecoration(
+                  hintText: 'separate by commas',
+                  hintStyle: TextStyle(color: Colors.grey)),
             ),
 
             //Save Entry Button
@@ -226,6 +252,7 @@ class _EntryScreenState extends State<EntryScreen> {
                   String bloodSugarInput =
                       _bsugarsController.text.trim(); //get user input
                   //int bloodSugarValue = int.tryParse(bloodSugarInput) ?? 0;
+                  String hHealth = _hHealthController.text.trim();
 
                   List<String> mnm = _mnmController.text
                       .trim()
@@ -255,17 +282,17 @@ class _EntryScreenState extends State<EntryScreen> {
                       convertToMilitaryTime(_sleepTimeController.text);
 
                   await DatabaseHelper().insertEntry(
-                    widget.day,
-                    severity.round(),
-                    fatigue,
-                    bloodSugarInput,
-                    mnmInput,
-                    activitiesInput,
-                    symptomsInput,
-                    int.parse(wakeTimeMilitary),
-                    int.parse(sleepTimeMilitary),
-                    water.round(),
-                  );
+                      widget.day,
+                      severity.round(),
+                      fatigue,
+                      bloodSugarInput,
+                      mnmInput,
+                      activitiesInput,
+                      symptomsInput,
+                      int.parse(wakeTimeMilitary),
+                      int.parse(sleepTimeMilitary),
+                      water.round(),
+                      hHealth);
                   print("mnm before inserting: $mnmInput");
                   print("activities before inserting: $activitiesInput");
 

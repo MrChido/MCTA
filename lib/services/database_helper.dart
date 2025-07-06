@@ -31,7 +31,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE entries(
@@ -46,7 +46,8 @@ class DatabaseHelper {
             symptoms TEXT,
             wake INTEGER,
             sleep INTEGER,
-            water INTEGER 
+            water INTEGER,
+            hHealth TEXT 
           )
         ''');
       },
@@ -70,6 +71,7 @@ class DatabaseHelper {
     int wake,
     int sleep,
     int water,
+    String hHealth,
   ) async {
     final db = await database;
     String mnmInput = mnm.isNotEmpty ? jsonEncode(mnm) : '[]';
@@ -93,6 +95,7 @@ class DatabaseHelper {
         'activities': activitiesInput,
         'symptoms': symptomsInput,
         'water': water,
+        'hHealth': hHealth,
       },
     );
     print("Inserted entry: ${await db.query('entries')}"); //verify sugars
