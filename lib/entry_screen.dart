@@ -166,20 +166,21 @@ class _EntryScreenState extends State<EntryScreen> {
                 },
               ),
             ),
-            Text('Wake Time:'),
-            TextField(
-                controller: _wakeTimeController,
-                style: TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-                    hintText: '7.00AM',
-                    hintStyle: TextStyle(color: Colors.grey))),
-            Text('Bed Time'),
+            Text('Bed Time:'),
             TextField(
                 controller: _sleepTimeController,
                 style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
                     hintText: '10.00PM',
                     hintStyle: TextStyle(color: Colors.grey))),
+            Text('Woke up at:'),
+            TextField(
+                controller: _wakeTimeController,
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                    hintText: '7.00AM',
+                    hintStyle: TextStyle(color: Colors.grey))),
+
             Text('Blood Sugar:'),
             TextField(
                 controller: _bsugarsController,
