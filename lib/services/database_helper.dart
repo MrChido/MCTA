@@ -4,6 +4,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
+  static final DatabaseHelper instance =
+      DatabaseHelper(); // this will ensure all dart ducments are reading the same database at that moment
+  //it avoids mulitple instances from spawning accidentaly
   static Database? _database;
 
   Future<Database> get database async {
