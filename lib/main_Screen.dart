@@ -4,11 +4,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'entry_screen.dart';
 import 'package:intl/intl.dart';
 import 'Utilities/date_util.dart';
-import 'Utilities/color_util.dart';
 //While color_util.dart doesnt affect this file directly, it is piggybacking off of
 //the one below affecting this file.
 import 'Widgs/calendar_widg.dart';
-import 'Widgs/data_review.dart';
 //This allows main.dart to access information found in the data_review document to
 //display the pertnent information in the correct spot
 
