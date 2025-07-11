@@ -8,7 +8,9 @@ import 'Utilities/color_util.dart';
 //While color_util.dart doesnt affect this file directly, it is piggybacking off of
 //the one below affecting this file.
 import 'Widgs/calendar_widg.dart';
-//import 'Utilities/data_review.dart';
+import 'Widgs/data_review.dart';
+//This allows main.dart to access information found in the data_review document to
+//display the pertnent information in the correct spot
 
 void main() {
   databaseFactory = databaseFactoryFfi;
