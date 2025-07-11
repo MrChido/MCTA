@@ -50,7 +50,8 @@ class DatabaseHelper {
             wake INTEGER,
             sleep INTEGER,
             water INTEGER,
-            hHealth TEXT 
+            hHealth TEXT,
+            weight REAL 
           )
         ''');
       },
@@ -75,6 +76,7 @@ class DatabaseHelper {
     int sleep,
     int water,
     String hHealth,
+    double weight,
   ) async {
     final db = await database;
     String mnmInput = mnm.isNotEmpty ? jsonEncode(mnm) : '[]';
@@ -99,6 +101,7 @@ class DatabaseHelper {
         'symptoms': symptomsInput,
         'water': water,
         'hHealth': hHealth,
+        'weight': weight,
       },
     );
     print("Inserted entry: ${await db.query('entries')}"); //verify sugars
@@ -112,6 +115,18 @@ class DatabaseHelper {
         await db.query('entries', where: 'day =?', whereArgs: [day]);
 
     return result.length;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllEntriesForMonth(
+      DateTime month) async {
+    final db = await database;
+    final String yearStr = month.year.toString();
+    final String monthStr = month.month.toString().padLeft(2, '0');
+
+    return await db.rawQuery(
+      '''SELECT * FROM entries WHERE strftime('%Y', timestamp) =? AND strftime('%m',timestamp) = ? ORDER BY timestamp DESC''',
+      [yearStr, monthStr],
+    );
   }
 
   Future<List<Map<String, dynamic>>> getEntriesForDay(int day) async {

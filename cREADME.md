@@ -45,3 +45,4 @@ The wife expressed a desire to track water consumption and I happily agreeed to 
 Only having about 4 hours of sleep, and looking off the wife seeing me pale and feeling me as cold decded to check on my Health, my blood preasure. heart rate, and oxygen levels. I asked if we should include that in the tracker, she said sure. so I did, I also tweaked the helper text in the entry screen and modified the visual behavior of the review button.
 Trimmed some fat and made a discovery that imports can piggyback on other imports.
 7/11 Renamed the main.dart file to main_Screen.dart, this was done to give more emphasis that this is the place that users will spend the majority of their app time in. It is also the hub of most of the functionalities of the app.
+We finaly have a decent looking review feature to display individiual entries, something to look into next is to possibly condense the days entries into a singular card. somehting to look into soon.

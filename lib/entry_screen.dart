@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:melzers_symptom_tracker/main_Screen.dart';
+import 'package:melzers_symptom_tracker/main.dart';
 import 'services/database_helper.dart';
 import 'dart:convert';
 
@@ -105,6 +105,7 @@ class _EntryScreenState extends State<EntryScreen> {
   final TextEditingController _sleepTimeController = TextEditingController();
   int water = 0;
   final TextEditingController _hHealthController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
 
   String convertToMilitaryTime(String timeInput) {
     timeInput = timeInput.trim().toLowerCase(); //normalize the case usage
@@ -196,6 +197,14 @@ class _EntryScreenState extends State<EntryScreen> {
                   hintText: "Systolic/Diastolic/Heart Rate/O²",
                   hintStyle: TextStyle(color: Colors.grey)),
             ),
+            Text('Weight:'),
+            TextField(
+              controller: _weightController,
+              style: TextStyle(color: Colors.black), //tracks the input
+              decoration: InputDecoration(
+                  hintText: "Please Enter your Weight(Lb)",
+                  hintStyle: TextStyle(color: Colors.grey)),
+            ),
             Text('Meals/Medications:'),
             TextField(
               controller: _mnmController,
@@ -281,6 +290,8 @@ class _EntryScreenState extends State<EntryScreen> {
                       convertToMilitaryTime(_wakeTimeController.text);
                   String sleepTimeMilitary =
                       convertToMilitaryTime(_sleepTimeController.text);
+                  double weight =
+                      double.tryParse(_weightController.text) ?? 0.0;
 
                   await DatabaseHelper().insertEntry(
                       widget.day,
@@ -293,7 +304,8 @@ class _EntryScreenState extends State<EntryScreen> {
                       int.parse(wakeTimeMilitary),
                       int.parse(sleepTimeMilitary),
                       water.round(),
-                      hHealth);
+                      hHealth,
+                      weight);
                   print("mnm before inserting: $mnmInput");
                   print("activities before inserting: $activitiesInput");
 

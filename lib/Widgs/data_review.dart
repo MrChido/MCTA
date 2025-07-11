@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:melzers_symptom_tracker/services/database_helper.dart';
 
 int monthNameToNumber(String monthName) {
