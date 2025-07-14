@@ -10,6 +10,7 @@ import 'Widgs/calendar_widg.dart';
 //This allows main.dart to access information found in the data_review document to
 //display the pertnent information in the correct spot
 import 'dart:convert';
+import 'Widgs/data_review.dart';
 
 void main() {
   databaseFactory = databaseFactoryFfi;
@@ -288,25 +289,32 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         final fnsList =
                             removeBacksLashes(entry['symptoms'] as String?);
 
-                        return Card(
-                          margin:
-                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: ListTile(
-                            title:
-                                Text("Day $day • ${timestamp.split('T')[0]}"),
-                            subtitle: Text(
-                              "Fatuige: ${entry['fatigue']} • Severity: ${entry['severity']}\n"
-                              "Weight: $weight lbs • Water Intake: ${entry['water'] ?? 'N/A'} oz\n"
-                              "Consumptions: $conList\n"
-                              "Activities: $actList\n"
-                              "Feelings and Symptoms: $fnsList",
-                            ),
-                          ),
-                        );
+                        return FutureBuilder<int>(
+                            future: sleepHoursFromEntry(timestamp),
+                            builder: (context, snapshot) {
+                              final sleepTotal = snapshot.data ?? 0;
+
+                              return Card(
+                                margin: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                child: ListTile(
+                                  title: Text(
+                                      "Day $day • ${timestamp.split('T')[0]}"),
+                                  subtitle: Text(
+                                    "Fatuige: ${entry['fatigue']} • Severity: ${entry['severity']}\n"
+                                    "Weight: $weight lbs • Water Intake: ${entry['water'] ?? 'N/A'} oz\n"
+                                    "Hours slept : $sleepTotal\n"
+                                    "Consumptions: $conList\n"
+                                    "Activities: $actList\n"
+                                    "Feelings and Symptoms: $fnsList",
+                                  ),
+                                ),
+                              );
+                            });
                       },
                     );
                   },
-                ),
+                )
             ],
           ),
         ));

@@ -22,9 +22,9 @@ Future<List<Map<String, dynamic>>> getEntriesForDate(
     {required int day, required int year, required String monthName}) async {
   final db = await DatabaseHelper.instance.database;
 
-  final int month = monthNameToNumber(monthName);
-  final String formattedDate =
-      '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+  // final int month = monthNameToNumber(monthName);
+  // final String formattedDate =
+  //     '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
 
   final results = await db.query(
     'entries',
@@ -32,4 +32,51 @@ Future<List<Map<String, dynamic>>> getEntriesForDate(
     whereArgs: ['2025-07-08'],
   );
   return results;
+}
+
+//sleep hour tracker
+int calculatedSleepHours(int sleepTime, int wakeTime) {
+  int sleepHour =
+      sleepTime ~/ 100; //the ~/ pulls the whole hours from a 24 hour cycle
+  int sleepMinute =
+      sleepTime % 100; // this one stores the rest of the provided time
+  int wakeHour = wakeTime ~/ 100;
+  int wakeMinute = wakeTime % 100;
+
+  int sleepTotalM = (sleepHour * 60) + sleepMinute;
+  int wakeTotalM = (wakeHour * 60) + wakeMinute;
+
+  int durationMinutes;
+  if (wakeTotalM < sleepTotalM) {
+    //wrap-around logic for weird overnight spans
+    durationMinutes = (1440 - sleepTotalM) + wakeTotalM;
+  } else {
+    durationMinutes = wakeTotalM - sleepTotalM;
+  }
+  return durationMinutes ~/ 60;
+}
+
+Future<int> sleepHoursFromEntry(String timestamp) async {
+  final db = await DatabaseHelper.instance.database;
+  final entry = await db.query(
+    'entries',
+    where: 'timestamp =?',
+    whereArgs: [timestamp],
+  );
+
+  if (entry.isEmpty) {
+    print('No entry found for $timestamp');
+  }
+
+  if (entry.isNotEmpty) {
+    final sleepTime = entry.first['sleep'] as int;
+    final wakeTime = entry.first['wake'] as int;
+    print('Raw entry: ${entry.first}');
+    print('SleepTime : $wakeTime');
+    print('SleepHours : ${calculatedSleepHours(sleepTime, wakeTime)}');
+
+    return calculatedSleepHours(sleepTime, wakeTime);
+  }
+
+  throw Exception('Entry not found for timestamp :$timestamp');
 }

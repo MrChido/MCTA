@@ -46,3 +46,4 @@ Only having about 4 hours of sleep, and looking off the wife seeing me pale and 
 Trimmed some fat and made a discovery that imports can piggyback on other imports.
 7/11 Renamed the main.dart file to main_Screen.dart, this was done to give more emphasis that this is the place that users will spend the majority of their app time in. It is also the hub of most of the functionalities of the app.
 We finaly have a decent looking review feature to display individiual entries, something to look into next is to possibly condense the days entries into a singular card. somehting to look into soon.
+After a full day of not having internet acess, oh what sadness, a late-night coding sesh has added a reasonable sleep time tracker, Idealy it will give an impression of your sleep paterns in a simple X hours structure.
