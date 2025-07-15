@@ -290,27 +290,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             removeBacksLashes(entry['symptoms'] as String?);
 
                         return FutureBuilder<int>(
-                            future: sleepHoursFromEntry(timestamp),
-                            builder: (context, snapshot) {
-                              final sleepTotal = snapshot.data ?? 0;
+                          future: () async {
+                            try {
+                              final db = await DatabaseHelper.instance.database;
+                              print('🛠️ sleepMinder Future is initializing');
+                              return await sleepMinder(db, entry);
+                            } catch (e) {
+                              print('🔥 sleepMinder failed: $e');
+                              return 0;
+                            }
+                          }(), // <-- This was missing proper closure
+                          builder: (context, snapshot) {
+                            final distilledTime = snapshot.data ?? 0;
 
-                              return Card(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                child: ListTile(
-                                  title: Text(
-                                      "Day $day • ${timestamp.split('T')[0]}"),
-                                  subtitle: Text(
-                                    "Fatuige: ${entry['fatigue']} • Severity: ${entry['severity']}\n"
-                                    "Weight: $weight lbs • Water Intake: ${entry['water'] ?? 'N/A'} oz\n"
-                                    "Hours slept : $sleepTotal\n"
-                                    "Consumptions: $conList\n"
-                                    "Activities: $actList\n"
-                                    "Feelings and Symptoms: $fnsList",
-                                  ),
+                            return Card(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: ListTile(
+                                title: Text(
+                                    "Day $day • ${timestamp.split('T')[0]}"),
+                                subtitle: Text(
+                                  "Fatigue: ${entry['fatigue']} • Severity: ${entry['severity']}\n"
+                                  "Weight: $weight lbs • Water Intake: ${entry['water'] ?? 'N/A'} oz\n"
+                                  "Hours slept: $distilledTime\n"
+                                  "Consumptions: $conList\n"
+                                  "Activities: $actList\n"
+                                  "Feelings and Symptoms: $fnsList",
                                 ),
-                              );
-                            });
+                              ),
+                            );
+                          },
+                        );
                       },
                     );
                   },

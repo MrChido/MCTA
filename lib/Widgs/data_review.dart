@@ -1,4 +1,5 @@
 import 'package:melzers_symptom_tracker/services/database_helper.dart';
+import 'package:sqflite/sqflite.dart';
 
 int monthNameToNumber(String monthName) {
   const months = {
@@ -28,55 +29,38 @@ Future<List<Map<String, dynamic>>> getEntriesForDate(
 
   final results = await db.query(
     'entries',
-    where: "strftime('%Y-%m-%d')', timestamp) =?",
+    where: "strftime('%Y-%m-%d' , timestamp) =?",
     whereArgs: ['2025-07-08'],
   );
   return results;
 }
 
 //sleep hour tracker
-int calculatedSleepHours(int sleepTime, int wakeTime) {
-  int sleepHour =
-      sleepTime ~/ 100; //the ~/ pulls the whole hours from a 24 hour cycle
-  int sleepMinute =
-      sleepTime % 100; // this one stores the rest of the provided time
-  int wakeHour = wakeTime ~/ 100;
-  int wakeMinute = wakeTime % 100;
 
-  int sleepTotalM = (sleepHour * 60) + sleepMinute;
-  int wakeTotalM = (wakeHour * 60) + wakeMinute;
-
-  int durationMinutes;
-  if (wakeTotalM < sleepTotalM) {
-    //wrap-around logic for weird overnight spans
-    durationMinutes = (1440 - sleepTotalM) + wakeTotalM;
-  } else {
-    durationMinutes = wakeTotalM - sleepTotalM;
-  }
-  return durationMinutes ~/ 60;
-}
-
-Future<int> sleepHoursFromEntry(String timestamp) async {
-  final db = await DatabaseHelper.instance.database;
-  final entry = await db.query(
+Future<int> sleepMinder(Database db, Map<String, dynamic> entry) async {
+  print('sleepMinder invoked');
+  final rawTimestamp = entry['timestamp'];
+  final date = rawTimestamp.split('T')[0];
+  final result = await db.query(
     'entries',
-    where: 'timestamp =?',
-    whereArgs: [timestamp],
+    columns: [
+      'sleep',
+      'wake',
+    ],
+    where: 'timestamp LIKE ?',
+    whereArgs: [date + '%'],
   );
-
-  if (entry.isEmpty) {
-    print('No entry found for $timestamp');
-  }
-
-  if (entry.isNotEmpty) {
-    final sleepTime = entry.first['sleep'] as int;
-    final wakeTime = entry.first['wake'] as int;
-    print('Raw entry: ${entry.first}');
-    print('SleepTime : $wakeTime');
-    print('SleepHours : ${calculatedSleepHours(sleepTime, wakeTime)}');
-
-    return calculatedSleepHours(sleepTime, wakeTime);
-  }
-
-  throw Exception('Entry not found for timestamp :$timestamp');
+  print('query result: $result');
+  // if (result.isEmpty) {
+  //   throw Exception('No sleep data found for timestamp: $timeStamp');
+  // }
+  //extract values from dtabase
+  int sleep = result[0]['sleep'] as int;
+  int wake = result[0]['wake'] as int;
+  print(' sleep $sleep | wake: $wake');
+  //caluculate the pure and distilled time
+  int pureTime = sleep - wake;
+  int distilledTime = (pureTime > 12) ? pureTime - 1200 : pureTime;
+  print('pureTime :$pureTime | distilledTime: $distilledTime');
+  return distilledTime;
 }
