@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
@@ -126,6 +127,18 @@ class DatabaseHelper {
     return await db.rawQuery(
       '''SELECT * FROM entries WHERE strftime('%Y', timestamp) =? AND strftime('%m',timestamp) = ? ORDER BY timestamp DESC''',
       [yearStr, monthStr],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getEntriesforDate(DateTime date) async {
+    final db = await database;
+
+    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+    return await db.query(
+      'entries',
+      where: "timestamp LIKE ?",
+      whereArgs: ["$formattedDate%"],
     );
   }
 

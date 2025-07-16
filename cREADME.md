@@ -47,3 +47,6 @@ Trimmed some fat and made a discovery that imports can piggyback on other import
 7/11 Renamed the main.dart file to main_Screen.dart, this was done to give more emphasis that this is the place that users will spend the majority of their app time in. It is also the hub of most of the functionalities of the app.
 We finaly have a decent looking review feature to display individiual entries, something to look into next is to possibly condense the days entries into a singular card. somehting to look into soon.
 After a full day of not having internet acess, oh what sadness, a late-night coding sesh has added a reasonable sleep time tracker, Idealy it will give an impression of your sleep paterns in a simple X hours structure.
+With the behavior adjusted we are complete with "vision 1" what was going on is that the review entries button was not waiting for a date selection and automaticaly dumping the months entries on screen, that was corrected. then the dates were only redirecting users to the entry screen, but was not observing the fact taht the app was in "review entries mode" aditionaly, now that it is all ironed out, the user can transition between dates and the exit of review mode, will clear the card area of the app. the final key to vision 1 to being complete on windows machines.
+
+The next task is to get 'vision 1' ready for android devices.

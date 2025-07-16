@@ -36,6 +36,13 @@ Future<List<Map<String, dynamic>>> getEntriesForDate(
 }
 
 //sleep hour tracker
+int toMinutes(int time) {
+  final hour =
+      time ~/ 100; //recieving the whole hours of a 24-hour based time stamp
+  final minute = time % 100; //recieving the minutes left over
+  return hour * 60 +
+      minute; //estbilishing the whole timestmp as minutes exclusively
+}
 
 Future<int> sleepMinder(Database db, Map<String, dynamic> entry) async {
   print('sleepMinder invoked');
@@ -58,9 +65,14 @@ Future<int> sleepMinder(Database db, Map<String, dynamic> entry) async {
   int sleep = result[0]['sleep'] as int;
   int wake = result[0]['wake'] as int;
   print(' sleep $sleep | wake: $wake');
+  int sleepMinutes = toMinutes(sleep);
+  int wakeMinutes = toMinutes(wake);
   //caluculate the pure and distilled time
-  int pureTime = sleep - wake;
-  int distilledTime = (pureTime > 12) ? pureTime - 1200 : pureTime;
+  int pureTime = (wakeMinutes >= sleepMinutes)
+      ? wakeMinutes - sleepMinutes
+      : (1440 - sleepMinutes) + wakeMinutes;
+
+  int distilledTime = pureTime ~/ 60;
   print('pureTime :$pureTime | distilledTime: $distilledTime');
   return distilledTime;
 }

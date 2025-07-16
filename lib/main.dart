@@ -57,6 +57,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Map<int, int> entriesPerDay = {};
   bool isReviewMode = false;
   List<int> reviewedDays = [];
+  DateTime? selectedDate;
 
   @override
   void initState() {
@@ -116,6 +117,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Future<void> _onDayTapped(int day) async {
+    if (isReviewMode) {
+      setState(() {
+        selectedDate = DateTime(currentMonth.year, currentMonth.month, day);
+      });
+      return;
+    }
     final didAddEntry = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
@@ -231,6 +238,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     isReviewMode = !isReviewMode;
                     if (isReviewMode) {
                       loadReviewedDays();
+                    } else if (!isReviewMode) {
+                      selectedDate = null;
                     } else {
                       reviewedDays.clear();
                     }
@@ -249,9 +258,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 child:
                     Text(isReviewMode ? "Exit Review Mode" : "Review Entries"),
               ),
-              if (isReviewMode)
+              if (isReviewMode && selectedDate != null)
                 FutureBuilder<List<Map<String, dynamic>>>(
-                  future: DatabaseHelper().getAllEntriesForMonth(currentMonth),
+                  future: DatabaseHelper().getEntriesforDate(selectedDate!),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Padding(
@@ -302,6 +311,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           }(), // <-- This was missing proper closure
                           builder: (context, snapshot) {
                             final distilledTime = snapshot.data ?? 0;
+                            final fatuige = entry['fatuigue'] == 1
+                                ? 'Fatiuged'
+                                : 'No Fatuige';
 
                             return Card(
                               margin: EdgeInsets.symmetric(
@@ -310,7 +322,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 title: Text(
                                     "Day $day • ${timestamp.split('T')[0]}"),
                                 subtitle: Text(
-                                  "Fatigue: ${entry['fatigue']} • Severity: ${entry['severity']}\n"
+                                  "$fatuige • Severity: ${entry['severity']}\n"
                                   "Weight: $weight lbs • Water Intake: ${entry['water'] ?? 'N/A'} oz\n"
                                   "Hours slept: $distilledTime\n"
                                   "Consumptions: $conList\n"
